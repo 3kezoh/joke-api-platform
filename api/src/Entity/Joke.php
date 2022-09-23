@@ -13,6 +13,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation\Blameable;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Type;
 
 #[ApiResource(
   normalizationContext: ['groups' => [Joke::READ]],
@@ -24,6 +29,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[Patch]
 #[Delete]
 #[ORM\Entity(repositoryClass: JokeRepository::class)]
+#[UniqueEntity('text')]
 class Joke
 {
   const READ = 'joke:read';
@@ -36,6 +42,9 @@ class Joke
 
   #[ORM\Column(length: 255)]
   #[Groups([Joke::READ, Joke::WRITE])]
+  #[NotBlank]
+  #[Length(min: 3, max: 255)]
+  #[Type('string')]
   private ?string $text = null;
 
   #[ORM\OneToMany(mappedBy: 'joke', targetEntity: Rating::class, orphanRemoval: true)]
@@ -47,6 +56,12 @@ class Joke
 
   #[ORM\OneToMany(mappedBy: 'joke', targetEntity: Comment::class)]
   private Collection $comments;
+
+  #[ORM\ManyToOne(inversedBy: 'jokes')]
+  #[ORM\JoinColumn(nullable: false)]
+  #[Blameable(on: 'create')]
+  #[Groups([Joke::READ])]
+  private ?User $author = null;
 
   public function __construct()
   {
@@ -152,6 +167,18 @@ class Joke
         $comment->setJoke(null);
       }
     }
+
+    return $this;
+  }
+
+  public function getAuthor(): ?User
+  {
+    return $this->author;
+  }
+
+  public function setAuthor(?User $author): self
+  {
+    $this->author = $author;
 
     return $this;
   }

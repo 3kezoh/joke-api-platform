@@ -16,11 +16,14 @@ class JokeFixtures extends Fixture implements DependentFixtureInterface
     $faker = Faker\Factory::create('fr_FR');
 
     $categories = $manager->getRepository(Category::class)->findAll();
+    $user = $this->getReference(UserFixtures::USER);
 
     for ($i = 0; $i < 50; $i++) {
       $joke = new Joke();
 
-      $joke->setText($faker->sentence());
+      $joke
+        ->setText($faker->sentence())
+        ->setAuthor($user);
 
       for ($j = 0; $j < 3; $j++) {
         $joke->addCategory($faker->randomElement($categories));
@@ -36,6 +39,7 @@ class JokeFixtures extends Fixture implements DependentFixtureInterface
   {
     return [
       CategoryFixtures::class,
+      UserFixtures::class
     ];
   }
 }
