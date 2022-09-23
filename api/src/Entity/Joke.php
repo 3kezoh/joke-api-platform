@@ -63,6 +63,10 @@ class Joke
   #[Groups([Joke::READ])]
   private ?User $author = null;
 
+  // This property is not persisted in the database
+  #[Groups([Joke::READ])]
+  private ?float $averageRating = null;
+
   public function __construct()
   {
     $this->ratings = new ArrayCollection();
@@ -179,6 +183,18 @@ class Joke
   public function setAuthor(?User $author): self
   {
     $this->author = $author;
+
+    return $this;
+  }
+
+  public function getAverageRating(): ?float
+  {
+    return $this->averageRating;
+  }
+
+  public function setAverageRating(float $averageRating): self
+  {
+    $this->averageRating = $averageRating;
 
     return $this;
   }
